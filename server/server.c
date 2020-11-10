@@ -64,7 +64,7 @@ void uploadFile(int sock, char filename[]){
         }
         if(! S_ISREG(st.st_mode)){
             printf("Error: Not a regular file\n");
-            
+
             // sends a error code to download
             sendint(sock, 0);
             return;
@@ -90,7 +90,7 @@ void uploadFile(int sock, char filename[]){
     // Default socket buffer limit is 43689 for LINUX LOW-MEM SYSTEMS!!
     // Using 10,000 to overcome the issue!!
     // If still throws bus error/ seg fault, reduce it!!
-    while(j >= BUFFER_LIMIT){
+    while(j>BUFFER_LIMIT){
         // read data from file
         read(rd,data,BUFFER_LIMIT);
         data[BUFFER_LIMIT]='\0';

@@ -70,7 +70,7 @@ void  downloadFile(int sock, char filename[]){
     // Default socket buffer limit is 43689 for LINUX LOW-MEM SYSTEMS!!
     // Using 10,000 to overcome the issue!!
     // If still throws bus error/ seg fault, reduce it!!
-    while(j>=BUFFER_LIMIT){
+    while(j>BUFFER_LIMIT){
 
         // send the server a ack to send next!
         sendint(sock,1);
