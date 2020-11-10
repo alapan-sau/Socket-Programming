@@ -13,15 +13,22 @@
 #define N 100000
 #define BUFFER_LIMIT 10000
 
+// prints the status dynamically
 void printStatus(int j, int size){
-    double percentage = ((double)(size-j)/(double)size) * 100;
+    double percentage;
+    if(size==0){
+        percentage = 100.00;
+    }
+    else{
+        percentage = ((double)(size-j)/(double)size) * 100;
+    }
     char buffer[100];
     sprintf(buffer,"\rDownloaded %0.2f%%",percentage);
     write(1,buffer,strlen(buffer));
     fflush(stdout);
 }
 
-
+// reads an integer from socket
 int readint(int sock){
     int n;
     read(sock, (char *)&n, sizeof(n));
@@ -29,6 +36,7 @@ int readint(int sock){
     return n;
 }
 
+// reads a string from socket
 void readstr(int sock, char* buffer){
     int len = readint(sock);
     read(sock, buffer, len);
@@ -36,11 +44,13 @@ void readstr(int sock, char* buffer){
     return;
 }
 
+// sends an integer to socket
 void sendint(int sock, int n){
     n = htonl(n);
     send(sock, (char *)&n, sizeof(n), 0);
 }
 
+// sends a string to socket
 void sendstr(int sock, char* buffer){
     sendint(sock,strlen(buffer));
     send(sock,buffer,strlen(buffer),0);
@@ -66,7 +76,8 @@ void  downloadFile(int sock, char filename[]){
         sendint(sock,1);
 
         // read from socket after ack
-        readstr(sock, data);
+        // readstr(sock, data);
+        read(sock,data, BUFFER_LIMIT);  // check
 
         // write to the file
         write(wd,data,BUFFER_LIMIT);
@@ -79,7 +90,8 @@ void  downloadFile(int sock, char filename[]){
     sendint(sock,1);
 
     // read from socket after ack
-    readstr(sock, data);
+    // readstr(sock, data);
+    read(sock,data, j); // check
 
     // write to the file
     write(wd,data,j);
@@ -129,6 +141,9 @@ int main(int argc, char const *argv[])
 
     sendint(sock, argc-1);
 
+    // error on no arguments!
+    if(argc==1) printf("No files to download!\n");
+
     for(int i=0;i<argc-1;i++){
         char data[N];
         // donot fuck up with pointers!!
@@ -144,7 +159,7 @@ int main(int argc, char const *argv[])
             downloadFile(sock,buffer);
         }
         else{
-            printf("File not Available!\n");
+            printf("Error: File not Available!\n");
         }
     }
 }

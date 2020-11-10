@@ -3,4 +3,14 @@ server/beta.txt
 server/delta.txt
 server/gamma.txt
 server/a.out
+server/server
+server/noperm.txt
+server/empty.txt
 client/a.out
+client/client
+client/alpha.txt
+client/beta.txt
+client/delta.txt
+client/gamma.txt
+client/empty.txt
+server/dir

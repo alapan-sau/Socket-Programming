@@ -13,7 +13,7 @@
 #define N 100000
 #define BUFFER_LIMIT 10000
 
-
+// reads an integer from socket
 int readint(int sock){
     int n;
     read(sock, (char *)&n, sizeof(n));
@@ -21,6 +21,7 @@ int readint(int sock){
     return n;
 }
 
+// reads a string from socket
 void readstr(int sock, char* buffer){
     int len = readint(sock);
     read(sock, buffer, len);
@@ -28,11 +29,13 @@ void readstr(int sock, char* buffer){
     return;
 }
 
+// sends an integer to socket
 void sendint(int sock, int n){
     n = htonl(n);
     send(sock, (char *)&n, sizeof(n), 0);
 }
 
+// sends a string to socket
 void sendstr(int sock, char* buffer){
     sendint(sock,strlen(buffer));
     send(sock,buffer,strlen(buffer),0);
@@ -44,13 +47,30 @@ void uploadFile(int sock, char filename[]){
     int rd = open(filename,O_RDONLY);
     if(rd == -1)
     {
-        perror("Requested file: ");
+        perror("Error");
 
         // sends a error code to download
         sendint(sock, 0);
         return;
     }
     else{
+        struct stat st;
+        if (fstat(rd, &st) < 0){
+            perror("Error");
+
+            // sends a error code to download
+            sendint(sock, 0);
+            return;
+        }
+        if(! S_ISREG(st.st_mode)){
+            printf("Error: Not a regular file\n");
+            
+            // sends a error code to download
+            sendint(sock, 0);
+            return;
+        }
+
+
         // sends a success code to download
         sendint(sock, 1);
     }
@@ -77,7 +97,8 @@ void uploadFile(int sock, char filename[]){
 
         // send data only after ack from client
         if(!readint(sock)) return;
-        sendstr(sock, data);
+        // sendstr(sock, data);
+        send(sock, data, BUFFER_LIMIT, 0);  // check
         j-=BUFFER_LIMIT;
     }
     // read data from file
@@ -86,7 +107,8 @@ void uploadFile(int sock, char filename[]){
 
     // send data only after ack from client
     if(!readint(sock)) return;
-    sendstr(sock, data);
+    // sendstr(sock, data);
+    send(sock, data, j, 0); // check
     j=0;
 
     if (close(rd) < 0)
@@ -157,6 +179,7 @@ int main(int argc, char const *argv[])
         readstr(new_socket,filename);
         printf("Uploading %s\n",filename);
         uploadFile(new_socket, filename);
+        printf("\n");
     }
     return 0;
 }
